@@ -218,8 +218,8 @@ main{min-height:0;height:calc(100dvh - 58px);padding:10px 14px!important;overflo
    <label for="p">Password</label><input id="p" type="password" autocomplete="current-password" placeholder="Enter your password">
    <p class="note" style="margin:8px 0 0">Gunakan email & password akun Supabase Anda.</p>
    <div class="err" id="le"></div>
-    <button type="button" class="btn ghost" style="margin-top:10px" onclick="showSetup()">⚙ Hubungkan Supabase</button>
    <button class="btn">Sign in</button>
+   <button type="button" class="btn ghost" style="margin-top:8px" onclick="showSetup()">⚙️ Pengaturan Supabase</button>
   </form>
  </div>
 </section>
@@ -271,29 +271,34 @@ main{min-height:0;height:calc(100dvh - 58px);padding:10px 14px!important;overflo
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ---------- Supabase configuration ---------- */
+/* URL + Publishable/anon key disimpan di browser setelah Anda mengisinya sekali. */
 let SUPABASE_URL = localStorage.getItem('spena-supabase-url') || '';
 let SUPABASE_PUBLISHABLE_KEY = localStorage.getItem('spena-supabase-key') || '';
-let SUPABASE_READY = SUPABASE_URL.startsWith('https://') && !!SUPABASE_PUBLISHABLE_KEY;
+let SUPABASE_READY = /^https:\/\/[^\s]+\.supabase\.co(m)?$/.test(SUPABASE_URL) && !!SUPABASE_PUBLISHABLE_KEY;
 let sb = SUPABASE_READY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
 
 function showSetup(){
-  modal(`<h3>Hubungkan ke Supabase</h3>
-  <p class="note">Masukkan <b>Project URL</b> dan <b>Publishable key</b> dari Supabase → Project Settings → API. Gunakan Publishable/anon key, <b>bukan service_role</b>.</p>
-  <label>Supabase Project URL</label>
-  <input id="surl" type="url" placeholder="https://xxxxxxxx.supabase.co" value="${esc(SUPABASE_URL)}">
-  <label>Publishable / anon key</label>
-  <input id="skey" type="text" placeholder="eyJ..." value="${esc(SUPABASE_PUBLISHABLE_KEY)}" autocomplete="off">
-  <div class="row"><button class="btn ghost" onclick="closeM()">Batal</button><button class="btn" onclick="saveSupabaseConfig()">Simpan & Hubungkan</button></div>`);
+ modal(`<h3>⚙️ Pengaturan Supabase</h3>
+ <p class="note">Isi <b>sekali saja</b>. Setelah disimpan, aplikasi akan mengingatnya di browser ini sehingga Anda tidak perlu memasukkan key setiap kali membuka aplikasi.</p>
+ <label>Supabase Project URL</label>
+ <input id="surl" type="url" placeholder="https://xxxxxxxx.supabase.co" value="${esc(SUPABASE_URL)}" autocomplete="off">
+ <label>Publishable / anon key</label>
+ <input id="skey" type="text" placeholder="eyJ..." value="${esc(SUPABASE_PUBLISHABLE_KEY)}" autocomplete="off">
+ <p class="note">Gunakan <b>Publishable/anon key</b>, bukan Secret/service_role key.</p>
+ <div class="row"><button class="btn ghost" onclick="closeM()">Batal</button><button class="btn" onclick="saveSupabaseConfig()">Simpan & Hubungkan</button></div>`);
 }
 function saveSupabaseConfig(){
-  const url=$('surl').value.trim().replace(/\/$/,'');
-  const key=$('skey').value.trim();
-  if(!/^https:\/\/[^\s]+\.supabase\.co(m)?$/.test(url)){alert('Project URL Supabase tidak valid. Contoh: https://xxxx.supabase.co');return}
-  if(!key){alert('Publishable/anon key belum diisi.');return}
-  if(key.toLowerCase().includes('service_role')){alert('Jangan gunakan service_role key. Gunakan Publishable/anon key.');return}
-  localStorage.setItem('spena-supabase-url',url);
-  localStorage.setItem('spena-supabase-key',key);
-  location.reload();
+ const url=$('surl').value.trim().replace(/\/$/,'');
+ const key=$('skey').value.trim();
+ if(!/^https:\/\/[^\s]+\.supabase\.co(m)?$/.test(url)){alert('Project URL Supabase tidak valid.');return}
+ if(!key){alert('Publishable/anon key belum diisi.');return}
+ if(/service[_-]?role|secret/i.test(key)){alert('Jangan gunakan Secret/service_role key. Gunakan Publishable/anon key.');return}
+ localStorage.setItem('spena-supabase-url',url);
+ localStorage.setItem('spena-supabase-key',key);
+ location.reload();
+}
+function clearSupabaseConfig(){
+ if(confirm('Hapus konfigurasi Supabase dari browser ini?')){localStorage.removeItem('spena-supabase-url');localStorage.removeItem('spena-supabase-key');location.reload();}
 }
 
 /* ---------- local fallback cache (only for first-run/demo; online data uses Supabase) ---------- */
@@ -310,30 +315,38 @@ let cfg={user:'mr.spena',pass:'spena2026',logo:'',mascot:''},mats=[],cur=7;
 async function init(){
  applyPics();
  if(!SUPABASE_READY){
-   $('le').textContent='Aplikasi belum terhubung ke Supabase. Klik tombol "Hubungkan Supabase" di bawah.';
+   $('le').innerHTML='Supabase belum terhubung. Tekan <b>⚙️ Pengaturan Supabase</b> di bawah untuk mengisinya sekali.';
    return;
  }
  try{
-   await loadSettings();
-   await loadMaterials();
    const {data:{session}}=await sb.auth.getSession();
-   if(session) enter();
-   sb.auth.onAuthStateChange((_event,session)=>{ if(session){enter();loadMaterials()} });
+   if(session){
+     enter();
+     await loadSettings();
+     await loadMaterials();
+   }
+   sb.auth.onAuthStateChange(async (_event,session)=>{
+     if(session){
+       enter();
+       try{await loadSettings(); await loadMaterials();}catch(e){console.error(e); $('le').textContent='Gagal memuat data: '+(e.message||e);}
+     }
+   });
    sb.channel('materials-realtime').on('postgres_changes',{event:'*',schema:'public',table:'materials'},()=>loadMaterials()).subscribe();
  }catch(e){console.error(e);$('le').textContent='Gagal terhubung ke Supabase: '+(e.message||e);}
 }
 
 async function loadMaterials(){
- const {data,error}=await sb.from('materials').select('*').order('created_at',{ascending:true});
+ const {data,error}=await sb.from('materials').select('*');
  if(error) throw error;
  mats=(data||[]).map(m=>({id:m.id,grade:m.grade,title:m.title,desc:m.description||'',html:m.html_content||'',game_url:m.game_url||''}));
  cnt();
  if(!$('grade').classList.contains('hidden')) render();
 }
 async function loadSettings(){
- const {data,error}=await sb.from('app_settings').select('*').limit(1).maybeSingle();
+ const {data,error}=await sb.from('app_settings').select('setting_key,setting_value').eq('user_id',(await sb.auth.getUser()).data.user?.id);
  if(error) throw error;
- if(data) cfg={...cfg,user:data.email||cfg.user,logo:data.logo||'',mascot:data.mascot||''};
+ const settings={}; (data||[]).forEach(x=>settings[x.setting_key]=x.setting_value||'');
+ cfg={...cfg,logo:settings.logo||cfg.logo,mascot:settings.mascot||cfg.mascot};
  applyPics();
 }
 let uid=0;
@@ -367,7 +380,7 @@ function cutout(c){const x=c.getContext('2d'),d=x.getImageData(0,0,c.width,c.hei
  x.putImageData(d,0,0)}
 function toggleFS(){const d=document,r=d.documentElement;try{if(!d.fullscreenElement&&!d.webkitFullscreenElement){(r.requestFullscreen||r.webkitRequestFullscreen||(()=>alert('On iPhone/iPad: tap Share > Add to Home Screen for fullscreen.'))).call(r)}else{(d.exitFullscreen||d.webkitExitFullscreen).call(d)}}catch(e){}}
 $('lf').onsubmit=async e=>{e.preventDefault();
- if(!SUPABASE_READY){$('le').textContent='Hubungkan Supabase terlebih dahulu.';showSetup();return}
+ if(!SUPABASE_READY){$('le').textContent='Supabase belum dikonfigurasi.';return}
  $('le').textContent='Signing in...';
  const {error}=await sb.auth.signInWithPassword({email:$('u').value.trim(),password:$('p').value});
  if(error){$('le').textContent=error.message}else{$('le').textContent='';enter();await loadMaterials()}
@@ -424,18 +437,22 @@ function openSettings(){
  <label>School logo</label><input type="file" id="sl" accept="image/*">
  <label>Mascot photo</label><input type="file" id="sm" accept="image/*">
  <p class="note">Materi dan pengaturan disimpan online di Supabase. File HTML game disimpan di database; file gambar/video besar sebaiknya nanti kita pindahkan ke Supabase Storage.</p>
- <div class="row"><button class="btn ghost" onclick="showSetup()">⚙ Koneksi Supabase</button><button class="btn ghost" onclick="closeM()">Cancel</button><button class="btn" onclick="saveSet()">Save online</button></div>`);
+ <p class="note"><b>Supabase:</b> ${SUPABASE_READY?'Terhubung ✓':'Belum terhubung'}</p>
+ <div class="row"><button class="btn ghost" onclick="showSetup()">⚙️ Supabase</button><button class="btn ghost" onclick="closeM()">Cancel</button><button class="btn" onclick="saveSet()">Save online</button></div>`);
 }
 function readImg(f,cut){return new Promise(ok=>{if(!f)return ok(null);const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{const s=Math.min(1,400/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);if(cut)cutout(c);ok(c.toDataURL('image/png'))};i.src=r.result};r.readAsDataURL(f)})}
 async function saveSet(){
  const l=await readImg($('sl').files[0]),m=await readImg($('sm').files[0],true);
  const {data:{user}}=await sb.auth.getUser();
  if(!user)return alert('Session login sudah berakhir.');
- const payload={id:user.id,email:user.email,logo:l||cfg.logo||'',mascot:m||cfg.mascot||'',updated_at:new Date().toISOString()};
- const {error}=await sb.from('app_settings').upsert(payload);
- if(error)return alert('Gagal menyimpan pengaturan: '+error.message);
- cfg={...cfg,...payload};applyPics();closeM();
+ const values={logo:l||cfg.logo||'',mascot:m||cfg.mascot||''};
+ for(const [key,value] of Object.entries(values)){
+   const {error}=await sb.from('app_settings').upsert({user_id:user.id,setting_key:key,setting_value:value},{onConflict:'user_id,setting_key'});
+   if(error)return alert('Gagal menyimpan pengaturan: '+error.message);
+ }
+ cfg={...cfg,...values};applyPics();closeM();
 }
+
 
 applyPics();
 init();
