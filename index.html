@@ -499,6 +499,17 @@ function pageDoc(inner,css){return `<!doctype html><meta charset="utf-8"><meta n
 .al{flex:1;min-width:0}.al b{display:block;font-size:13.5px}.al small{color:var(--mut);font-size:11.5px;font-weight:500}
 .pl{color:var(--blue);font-size:20px;font-weight:700;line-height:1}
 .ki{display:inline-block;width:15px;height:15px;color:var(--blue);vertical-align:-3px;margin-right:2px;font-style:normal}.ki svg{width:100%;height:100%}
+/* compact add-material rows */
+.modal svg{max-width:40px;max-height:40px}
+.addrow{gap:6px!important}
+.addrow .addb{padding:6px 10px!important;gap:10px!important;border-radius:10px!important}
+.ti2{width:28px!important;height:28px!important;border-radius:8px!important}
+.ti2 svg{width:18px!important;height:18px!important;flex:none;display:block}
+.al{display:flex!important;align-items:baseline;gap:8px;overflow:hidden;white-space:nowrap}
+.al b{display:inline!important;font-size:13px!important}
+.al small{display:inline!important;overflow:hidden;text-overflow:ellipsis;font-size:11px!important}
+@media(max-width:420px){.al small{display:none!important}}
+.pl{font-size:18px!important}
 </style>${inner}`}
 function mediaDoc(type,url){
  const u=esc(url);
@@ -573,6 +584,7 @@ doc:'<svg viewBox="0 0 64 64"><path d="M16 8h22l12 12v36H16z" fill="#fff" stroke
 img:'<svg viewBox="0 0 64 64"><rect x="8" y="12" width="48" height="40" rx="7" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="26" r="4" fill="currentColor"/><path d="M10 46l14-14 10 10 8-8 12 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 text:'<svg viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="9" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M22 24h20M32 24v20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 link:'<svg viewBox="0 0 64 64"><path d="M27 37a9 9 0 0 0 13 0l8-8a9 9 0 0 0-13-13l-3 3M37 27a9 9 0 0 0-13 0l-8 8a9 9 0 0 0 13 13l3-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
+Object.keys(AI).forEach(k=>AI[k]=AI[k].replace('<svg ','<svg width="18" height="18" '));
 const KI={html:'html',text:'text',youtube:'yt',vimeo:'yt',game:'game',wordwall:'game',pdf:'doc',gslides:'doc',gdoc:'doc',gsheet:'doc',gform:'doc',gdrive:'doc',office:'doc',canva:'doc',image:'img',video:'img',audio:'img'};
 const kindIc=r=>`<i class="ki">${AI[KI[r.kind]||(r.label==='HTML'?'html':r.label==='Text'?'text':'link')]}</i>`;
 const HINT={yt:'Paste a YouTube link (video, playlist or Shorts)',game:'Paste a Quizizz, Wordwall, Kahoot, Blooket… link (or embed code)',doc:'Paste a link: Google Slides/Docs/Drive, PDF, PowerPoint, Canva…',img:'Paste a direct link to an image (jpg/png/gif) or video (mp4)',web:'Paste any link or embed code'};
