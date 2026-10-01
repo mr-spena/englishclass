@@ -312,7 +312,7 @@ main{min-height:0;height:calc(100dvh - 58px);padding:10px 14px!important;overflo
   </div>
   <div id="tools" class="hidden">
    <div class="bar"><button class="btn ghost" onclick="showHome()">Back</button><h2>Other Features</h2><span></span></div>
-   <div class="tg" id="tgrid"></div>
+   <div class="grid" id="tgrid"></div>
   </div>
   <div id="grade" class="hidden">
    <div class="bar">
@@ -486,6 +486,10 @@ function pageDoc(inner,css){return `<!doctype html><meta charset="utf-8"><meta n
 .tt b{font-size:13.5px!important;margin:0!important}
 .tt small{display:block;font-size:11px;color:var(--mut);font-weight:500}
 @media(max-width:520px){.tt small{display:none}.tt{padding:9px 10px!important}.tt b{font-size:12.5px!important}.tt .ti{width:32px;height:32px}.tt .ti svg{width:21px;height:21px}}
+#tools{flex:1;min-height:0;overflow:auto}
+#tools .bar{margin-bottom:10px}
+#tools .grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))!important;gap:8px}
+@media(max-width:520px){#tools .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#tools .card p,#tools .card .go{display:none!important}#tools .card h3{font-size:12.5px}}
 </style>${inner}`}
 function mediaDoc(type,url){
  const u=esc(url);
@@ -761,13 +765,13 @@ function tDice(el){
  return()=>clearInterval(iv);
 }
 const TOOLS=[
- {id:'timer',e:'⏱️',n:'Countdown Timer',d:'Big timer with beep',run:tTimer},
+ {id:'timer',e:'⏱️',n:'Timer',d:'Big timer with beep',run:tTimer},
  {id:'wheel',e:'🎡',n:'Name Wheel',d:'Pick a random student',run:tWheel},
  {id:'groups',e:'👥',n:'Group Maker',d:'Shuffle into teams',run:tGroups},
  {id:'score',e:'🏆',n:'Scoreboard',d:'Team points for games',run:tScore},
  {id:'noise',e:'🎤',n:'Noise Meter',d:'Keep the class volume down',run:tNoise},
  {id:'qr',e:'🔳',n:'QR Code',d:'Let students scan a link',run:tQR},
- {id:'dice',e:'🎲',n:'Dice, Coin & Number',d:'Quick random picks',run:tDice}];
+ {id:'dice',e:'🎲',n:'Dice & Coin',d:'Quick random picks',run:tDice}];
 const IC={
 timer:'<svg viewBox="0 0 64 64"><circle cx="32" cy="36" r="20" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M32 36V25M32 36l8 5M26 10h12M32 10v6" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>',
 wheel:'<svg viewBox="0 0 64 64"><circle cx="32" cy="34" r="22" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M32 12v44M10 34h44M16.5 18.5l31 31M47.5 18.5l-31 31" stroke="currentColor" stroke-width="2.5" opacity=".4"/><circle cx="32" cy="34" r="4" fill="currentColor"/><path d="M27 4h10l-5 9z" fill="currentColor"/></svg>',
@@ -778,7 +782,7 @@ qr:'<svg viewBox="0 0 64 64"><rect x="9" y="9" width="19" height="19" rx="3" fil
 dice:'<svg viewBox="0 0 64 64"><rect x="9" y="9" width="46" height="46" rx="10" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><g fill="currentColor"><circle cx="22" cy="22" r="3.6"/><circle cx="42" cy="22" r="3.6"/><circle cx="32" cy="32" r="3.6"/><circle cx="22" cy="42" r="3.6"/><circle cx="42" cy="42" r="3.6"/></g></svg>'};
 TOOLS.forEach(t=>t.i=IC[t.id]);
 function openTools(){$('home').classList.add('hidden');$('grade').classList.add('hidden');$('tools').classList.remove('hidden');
- $('tgrid').innerHTML=TOOLS.map(t=>`<button class="tt" onclick="openTool('${t.id}')"><div class="ti">${t.i}</div><div><b>${t.n}</b><small>${t.d}</small></div></button>`).join('')}
+ $('tgrid').innerHTML=TOOLS.map(t=>`<div class="card" tabindex="0" onclick="openTool('${t.id}')" onkeydown="if(event.key==='Enter')openTool('${t.id}')"><div class="tile">${t.i}</div><div><h3>${t.n}</h3><p>${t.d}</p></div><span class="go">›</span></div>`).join('')}
 function openTool(id){const t=TOOLS.find(x=>x.id===id);$('tln').textContent=t.n;const b=$('tb2');b.innerHTML='';$('tl').classList.remove('hidden');tlOff=t.run(b)||null;
  try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>wl=w).catch(()=>{})}catch(e){}}
 function closeTool(){if(tlOff)tlOff();tlOff=null;try{wl&&wl.release()}catch(e){}wl=null;if(document.fullscreenElement===$('tl'))document.exitFullscreen();$('tl').classList.add('hidden');$('tb2').innerHTML=''}
