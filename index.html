@@ -307,7 +307,7 @@ main{min-height:0;height:calc(100dvh - 58px);padding:10px 14px!important;overflo
      <div><h3>Grade 9</h3><p>Speak with confidence!</p><span class="cn" data-g="9"></span></div><span class="go">›</span></div>
     <div class="card c8" tabindex="0" onclick="openTools()" onkeydown="if(event.key==='Enter')openTools()">
      <div class="tile"><svg viewBox="0 0 64 64"><rect x="10" y="10" width="20" height="20" rx="5" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><rect x="34" y="10" width="20" height="20" rx="5" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><rect x="10" y="34" width="20" height="20" rx="5" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><rect x="34" y="34" width="20" height="20" rx="5" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg></div>
-     <div><h3>Other Features</h3><p>Timer, name wheel &amp; more</p><span class="cn">7 tools</span></div><span class="go">›</span></div>
+     <div><h3>Other Features</h3><p>Timer, name wheel &amp; more</p><span class="cn">8 tools</span></div><span class="go">›</span></div>
    </div>
   </div>
   <div id="tools" class="hidden">
@@ -398,7 +398,7 @@ async function loadSettings(userId){
  const {data,error}=await sb.from('app_settings').select('setting_key,setting_value').eq('user_id',userId);
  if(error) throw error;
  const settings={}; (data||[]).forEach(x=>settings[x.setting_key]=x.setting_value||'');
- window.appSettings=settings;rosterTxt=null;
+ window.appSettings=settings;CL=null;
  cfg={...cfg,logo:settings.logo||cfg.logo,mascot:settings.mascot||cfg.mascot};
  applyPics();
 }
@@ -457,7 +457,7 @@ function itemsOf(m){
 }
 function chipsOf(m){
  const it=itemsOf(m);if(!it.length)return '';
- const c=it.slice(0,6).map(x=>{const r=resolveItem(x);return `<span class="chip">${r.icon} ${esc(r.label)}</span>`}).join('');
+ const c=it.slice(0,6).map(x=>{const r=resolveItem(x);return `<span class="chip">${kindIc(r)} ${esc(r.label)}</span>`}).join('');
  return `<div class="chips">${c}${it.length>6?`<span class="chip">+${it.length-6}</span>`:''}</div>`;
 }
 function extractUrl(raw){
@@ -490,6 +490,15 @@ function pageDoc(inner,css){return `<!doctype html><meta charset="utf-8"><meta n
 #tools .bar{margin-bottom:10px}
 #tools .grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))!important;gap:8px}
 @media(max-width:520px){#tools .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#tools .card p,#tools .card .go{display:none!important}#tools .card h3{font-size:12.5px}}
+
+.addrow{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+.addrow .addb{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;color:var(--ink);font-size:13px}
+.addb:hover{background:#f3f8ff}
+.ti2{width:32px;height:32px;border-radius:9px;background:#eaf2fd;color:var(--blue);display:grid;place-items:center;flex:none}
+.ti2 svg{width:21px;height:21px}
+.al{flex:1;min-width:0}.al b{display:block;font-size:13.5px}.al small{color:var(--mut);font-size:11.5px;font-weight:500}
+.pl{color:var(--blue);font-size:20px;font-weight:700;line-height:1}
+.ki{display:inline-block;width:15px;height:15px;color:var(--blue);vertical-align:-3px;margin-right:2px;font-style:normal}.ki svg{width:100%;height:100%}
 </style>${inner}`}
 function mediaDoc(type,url){
  const u=esc(url);
@@ -555,7 +564,17 @@ function resolveItem(it){
 function modal(h){$('mb').innerHTML=h;$('modal').classList.remove('hidden')}
 function closeM(){$('modal').classList.add('hidden')}
 let blocks=[];
-const ADD=[['html','🎮 HTML'],['yt','▶️ YouTube'],['game','🎯 Quiz / Game link'],['doc','📄 PDF / PPT / Slides'],['img','🖼️ Image / Video'],['text','📝 Text']];
+const ADD=[['html','HTML file / code','Slides or interactive games'],['yt','YouTube','Video, playlist or Shorts'],['game','Quiz / Game link','Quizizz, Wordwall, Kahoot'],['doc','PDF / PPT / Slides','Google Slides, Drive, Canva'],['img','Image / Video','Direct link to a file'],['text','Text','Vocabulary list or notes']];
+const AI={
+html:'<svg viewBox="0 0 64 64"><path d="M24 20 10 32l14 12M40 20l14 12-14 12M36 12 28 52" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+yt:'<svg viewBox="0 0 64 64"><rect x="6" y="14" width="52" height="36" rx="10" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M27 24v16l14-8z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+game:'<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><circle cx="32" cy="32" r="11" fill="none" stroke="currentColor" stroke-width="3" opacity=".45"/><circle cx="32" cy="32" r="4" fill="currentColor"/></svg>',
+doc:'<svg viewBox="0 0 64 64"><path d="M16 8h22l12 12v36H16z" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M38 8v12h12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 32h18M24 40h18M24 48h10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".4"/></svg>',
+img:'<svg viewBox="0 0 64 64"><rect x="8" y="12" width="48" height="40" rx="7" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="26" r="4" fill="currentColor"/><path d="M10 46l14-14 10 10 8-8 12 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+text:'<svg viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="9" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M22 24h20M32 24v20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+link:'<svg viewBox="0 0 64 64"><path d="M27 37a9 9 0 0 0 13 0l8-8a9 9 0 0 0-13-13l-3 3M37 27a9 9 0 0 0-13 0l-8 8a9 9 0 0 0 13 13l3-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
+const KI={html:'html',text:'text',youtube:'yt',vimeo:'yt',game:'game',wordwall:'game',pdf:'doc',gslides:'doc',gdoc:'doc',gsheet:'doc',gform:'doc',gdrive:'doc',office:'doc',canva:'doc',image:'img',video:'img',audio:'img'};
+const kindIc=r=>`<i class="ki">${AI[KI[r.kind]||(r.label==='HTML'?'html':r.label==='Text'?'text':'link')]}</i>`;
 const HINT={yt:'Paste a YouTube link (video, playlist or Shorts)',game:'Paste a Quizizz, Wordwall, Kahoot, Blooket… link (or embed code)',doc:'Paste a link: Google Slides/Docs/Drive, PDF, PowerPoint, Canva…',img:'Paste a direct link to an image (jpg/png/gif) or video (mp4)',web:'Paste any link or embed code'};
 function openForm(id){
  const m=mats.find(x=>String(x.id)===String(id))||{title:'',desc:''};
@@ -565,7 +584,7 @@ function openForm(id){
  <label>Short description</label><input id="fd" value="${esc(m.desc)}" placeholder="e.g. Chapter 1 · Warm up + Game">
  <label>Content <span style="font-weight:400;color:var(--mut)">· shown in this order when you present</span></label>
  <div id="blk" style="margin-top:8px"></div>
- <div class="addrow">${ADD.map(a=>`<button class="btn ghost" type="button" onclick="addB('${a[0]}')">${a[1]}</button>`).join('')}</div>
+ <div class="addrow">${ADD.map(a=>`<button class="addb" type="button" onclick="addB('${a[0]}')"><span class="ti2">${AI[a[0]==='yt'?'yt':a[0]]}</span><span class="al"><b>${a[1]}</b><small>${a[2]}</small></span><span class="pl">+</span></button>`).join('')}</div>
  <div class="row"><button class="btn ghost" onclick="closeM()">Cancel</button><button class="btn" id="sv" onclick="save('${id||''}')">Save</button></div>`);
  renderBlocks();
 }
@@ -582,19 +601,19 @@ function detHTML(b,i){
  const r=parseLink(b.u);
  if(!r)return '⚠️ Link tidak dikenali. Pastikan diawali https:// atau tempel kode embed.';
  const tab=b.tab===undefined?r.mode==='tab':b.tab,can=r.mode!=='doc';
- return `<b>${r.icon} ${esc(r.label)}</b> · ${r.mode==='doc'?'tampil di slide':tab?'akan dibuka di tab baru':'tampil di dalam slide'}`
+ return `<b>${kindIc(r)} ${esc(r.label)}</b> · ${r.mode==='doc'?'tampil di slide':tab?'akan dibuka di tab baru':'tampil di dalam slide'}`
   +(r.tip&&tab?`<br>${esc(r.tip)}`:'')
   +(can?`<label class="ck"><input type="checkbox" ${tab?'checked':''} onchange="blocks[${i}].tab=this.checked;updDet(${i})">Open in a new tab instead of inside the slide</label>`:'');
 }
 function updDet(i){const e=$('det'+i);if(e)e.innerHTML=detHTML(blocks[i],i)}
 function renderBlocks(){
  $('blk').innerHTML=blocks.length?blocks.map((b,i)=>{
-  const meta=b.t==='html'?['🎮','HTML slide / game']:b.t==='text'?['📝','Text slide']:['🔗','Link'];
+  const meta=b.t==='html'?[AI.html,'HTML slide / game']:b.t==='text'?[AI.text,'Text slide']:[AI.link,'Link'];
   let body='';
   if(b.t==='html')body=`<textarea rows="5" placeholder="<html>… paste code here, or choose a file below" oninput="blocks[${i}].html=this.value">${esc(b.html||'')}</textarea><input type="file" accept=".html,.htm" onchange="loadHtmlFile(${i},this.files[0])">`;
   else if(b.t==='text')body=`<textarea rows="5" placeholder="Type your text. Tip: write  word = meaning  on a line to make a vocabulary list." oninput="blocks[${i}].x=this.value">${esc(b.x||'')}</textarea>`;
   else body=`<input class="bu" value="${esc(b.u||'')}" placeholder="https://…" oninput="blocks[${i}].u=this.value;updDet(${i})"><div class="det" id="det${i}">${detHTML(b,i)}</div>`;
-  return `<div class="blk"><div class="bh"><span class="bt">${i+1}. ${meta[0]} ${meta[1]}</span><span class="bs"><button class="mini" type="button" onclick="mvB(${i},-1)" ${i===0?'disabled':''}>↑</button><button class="mini" type="button" onclick="mvB(${i},1)" ${i===blocks.length-1?'disabled':''}>↓</button><button class="mini d" type="button" onclick="rmB(${i})">✕</button></span></div>
+  return `<div class="blk"><div class="bh"><span class="bt">${i+1}. <i class="ki">${meta[0]}</i> ${meta[1]}</span><span class="bs"><button class="mini" type="button" onclick="mvB(${i},-1)" ${i===0?'disabled':''}>↑</button><button class="mini" type="button" onclick="mvB(${i},1)" ${i===blocks.length-1?'disabled':''}>↓</button><button class="mini d" type="button" onclick="rmB(${i})">✕</button></span></div>
   <input placeholder="Name (optional)" value="${esc(b.n||'')}" oninput="blocks[${i}].n=this.value">${body}</div>`}).join('')
   :'<p class="note">No content yet. Add something with the buttons below.</p>';
 }
@@ -682,11 +701,41 @@ let AC=null,tlOff=null,wl=null,rosterTxt=null,rT=0;
 const ac=()=>AC||(AC=new (window.AudioContext||window.webkitAudioContext)());
 const rnd=n=>Math.floor(Math.random()*n);
 function beep(n){try{const a=ac();for(let i=0;i<(n||3);i++){const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.25;o.start(a.currentTime+i*.4);o.stop(a.currentTime+i*.4+.22)}}catch(e){}}
-function rosterText(){if(rosterTxt===null){let l='';try{l=localStorage.getItem('spena-students')||''}catch(e){}rosterTxt=(window.appSettings&&appSettings.students)||l}return rosterTxt}
-const roster=()=>rosterText().split('\n').map(x=>x.trim()).filter(Boolean);
-function saveRoster(v){rosterTxt=v;try{localStorage.setItem('spena-students',v)}catch(e){}clearTimeout(rT);rT=setTimeout(()=>{if(sb&&started)sb.from('app_settings').upsert({user_id:started,setting_key:'students',setting_value:v},{onConflict:'user_id,setting_key'}).then(()=>{},()=>{})},900)}
-const rosterDet=()=>`<details class="rd"><summary>Student names (${roster().length}) · tap to edit</summary><textarea id="rost" rows="6" placeholder="One name per line">${esc(rosterText())}</textarea><small>Saved automatically and shared by the name wheel and group maker.</small></details>`;
-const bindRoster=cb=>{const t=$('rost');if(t)t.oninput=()=>{saveRoster(t.value);cb()}};
+let CL=null,curC=0;
+function loadClasses(){
+ if(CL)return CL;
+ let raw=window.appSettings&&appSettings.classes;
+ if(!raw){try{raw=localStorage.getItem('spena-classes')}catch(e){}}
+ try{CL=JSON.parse(raw)}catch(e){CL=null}
+ if(!Array.isArray(CL)){CL=[];let old=(window.appSettings&&appSettings.students)||'';if(!old){try{old=localStorage.getItem('spena-students')||''}catch(e){}}
+  if(old.trim())CL.push({n:'My class',s:old.split('\n').map(x=>x.trim()).filter(Boolean)})}
+ try{curC=+localStorage.getItem('spena-curc')||0}catch(e){}
+ if(curC>=CL.length)curC=0;
+ return CL;
+}
+function saveClasses(){const v=JSON.stringify(CL);try{localStorage.setItem('spena-classes',v);localStorage.setItem('spena-curc',curC)}catch(e){}
+ clearTimeout(rT);rT=setTimeout(()=>{if(sb&&started)sb.from('app_settings').upsert({user_id:started,setting_key:'classes',setting_value:v},{onConflict:'user_id,setting_key'}).then(()=>{},()=>{})},900)}
+const roster=()=>{const c=loadClasses()[curC];return c?c.s.slice():[]};
+function clsBar(){const C=loadClasses();return `<div class="rw" id="cls">${C.length?C.map((c,i)=>`<button class="btn ${i===curC?'':'ghost'}" data-c="${i}">${esc(c.n)} · ${c.s.length}</button>`).join(''):'<span style="opacity:.85">No class yet. Add one in Student Database or type names below.</span>'}<button class="btn ghost" id="ncl">Manage classes</button></div>`}
+function rosterDet(){const c=loadClasses()[curC];return `<details class="rd"><summary>${c?esc(c.n)+' · ':''}${roster().length} students · tap to type names manually</summary><textarea id="rost" rows="6" placeholder="One name per line">${esc(c?c.s.join('\n'):'')}</textarea><small>${c?'Editing the selected class.':'Typing here creates “Class 1”.'}</small></details>`}
+function bindRoster(cb){
+ document.querySelectorAll('#cls [data-c]').forEach(b=>b.onclick=()=>{curC=+b.dataset.c;saveClasses();const q=$('cls');if(q)q.outerHTML=clsBar();const r=document.querySelector('.rd');if(r)r.outerHTML=rosterDet();bindRoster(cb);cb()});
+ const n=$('ncl');if(n)n.onclick=()=>openTool('db');
+ const t=$('rost');if(t)t.oninput=()=>{const C=loadClasses();if(!C.length){C.push({n:'Class 1',s:[]});curC=0}C[curC].s=t.value.split('\n').map(x=>x.trim()).filter(Boolean);saveClasses();cb()};
+}
+function tDB(el){
+ const C=loadClasses();let sel=Math.min(curC,Math.max(0,C.length-1));
+ const draw=()=>{const c=C[sel];
+  el.innerHTML=`<div class="rw">${C.map((x,i)=>`<button class="btn ${i===sel?'':'ghost'}" data-i="${i}">${esc(x.n)} · ${x.s.length}</button>`).join('')}</div>
+  <div class="rw"><input id="dn2" placeholder="New class name, e.g. 7A" style="width:230px"><button class="btn" id="da">Add class</button></div>
+  ${c?`<div class="gc" style="width:100%;max-width:520px"><div class="rw" style="justify-content:space-between;flex-wrap:nowrap"><input id="drn" value="${esc(c.n)}" style="flex:1;min-width:0;font-weight:700"><button class="btn ghost" id="dd">Delete class</button></div><textarea id="dt" rows="10" placeholder="One student name per line (paste a whole list)">${esc(c.s.join('\n'))}</textarea><small id="dc">${c.s.length} students · saved automatically</small></div>`:'<p style="opacity:.85">Add your first class above, then type or paste the student names.</p>'}`;
+  el.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{sel=curC=+b.dataset.i;saveClasses();draw()});
+  $('da').onclick=()=>{const v=$('dn2').value.trim();if(!v)return;C.push({n:v,s:[]});sel=curC=C.length-1;saveClasses();draw()};
+  if(c){$('drn').onchange=()=>{c.n=$('drn').value.trim()||c.n;saveClasses();draw()};
+   $('dt').oninput=()=>{c.s=$('dt').value.split('\n').map(x=>x.trim()).filter(Boolean);$('dc').textContent=c.s.length+' students · saved automatically';saveClasses()};
+   $('dd').onclick=()=>{if(!confirm('Delete class '+c.n+' and its student list?'))return;C.splice(sel,1);sel=curC=Math.max(0,C.length-1);saveClasses();draw()}}};
+ draw();
+}
 
 function tTimer(el){
  let total=300,left=300,end=0,iv=0;
@@ -704,7 +753,7 @@ function tTimer(el){
 }
 function tWheel(el){
  let names=roster(),ang=0,busy=false;const col=['#e8a400','#1a67c9','#d62839','#2bb673','#7b4bd6','#ff7a1a'];
- el.innerHTML=`<div class="wl"><canvas id="wc" width="520" height="520" style="max-width:86vw;max-height:52vh"></canvas><div class="ptr">▼</div></div><div id="wr" class="tbig" style="font-size:clamp(32px,7vw,80px)">&nbsp;</div><div class="rw"><button class="btn" id="sp">Spin!</button><label class="ck2"><input type="checkbox" id="rm" checked>Remove after pick</label><button class="btn ghost" id="rl">Reload names</button></div>${rosterDet()}`;
+ el.innerHTML=`${clsBar()}<div class="wl"><canvas id="wc" width="520" height="520" style="max-width:86vw;max-height:52vh"></canvas><div class="ptr">▼</div></div><div id="wr" class="tbig" style="font-size:clamp(32px,7vw,80px)">&nbsp;</div><div class="rw"><button class="btn" id="sp">Spin!</button><label class="ck2"><input type="checkbox" id="rm" checked>Remove after pick</label><button class="btn ghost" id="rl">Reload names</button></div>${rosterDet()}`;
  const draw=()=>{const x=$('wc').getContext('2d'),n=names.length||1,r=260,sl=2*Math.PI/n;x.clearRect(0,0,520,520);
   for(let i=0;i<n;i++){const a0=ang+i*sl;x.beginPath();x.moveTo(r,r);x.arc(r,r,r-4,a0,a0+sl);x.fillStyle=col[i%col.length];x.fill();x.save();x.translate(r,r);x.rotate(a0+sl/2);x.fillStyle='#fff';x.font='bold '+Math.max(14,Math.min(30,340/n))+'px sans-serif';x.textAlign='right';x.fillText((names[i]||'Add names below').slice(0,18),r-24,9);x.restore()}};
  bindRoster(()=>{names=roster();draw()});
@@ -718,7 +767,7 @@ function tWheel(el){
  draw();
 }
 function tGroups(el){
- el.innerHTML=`<div class="rw"><select id="gm" style="width:auto"><option value="n">Number of groups</option><option value="s">Students per group</option></select><input id="gn" type="number" min="1" value="4" style="width:90px"><button class="btn" id="gs">Shuffle</button></div><div id="gr" class="gg"></div>${rosterDet()}`;
+ el.innerHTML=`${clsBar()}<div class="rw"><select id="gm" style="width:auto"><option value="n">Number of groups</option><option value="s">Students per group</option></select><input id="gn" type="number" min="1" value="4" style="width:90px"><button class="btn" id="gs">Shuffle</button></div><div id="gr" class="gg"></div>${rosterDet()}`;
  bindRoster(()=>{});
  $('gs').onclick=()=>{const n=roster();if(!n.length)return alert('Add student names first.');
   for(let i=n.length-1;i>0;i--){const j=rnd(i+1);[n[i],n[j]]=[n[j],n[i]]}
@@ -765,6 +814,7 @@ function tDice(el){
  return()=>clearInterval(iv);
 }
 const TOOLS=[
+ {id:"db",n:"Student Database",d:"Classes and student names",run:tDB},
  {id:'timer',e:'⏱️',n:'Timer',d:'Big timer with beep',run:tTimer},
  {id:'wheel',e:'🎡',n:'Name Wheel',d:'Pick a random student',run:tWheel},
  {id:'groups',e:'👥',n:'Group Maker',d:'Shuffle into teams',run:tGroups},
@@ -780,10 +830,11 @@ score:'<svg viewBox="0 0 64 64"><path d="M20 10h24v15c0 7-5 12-12 12s-12-5-12-12
 noise:'<svg viewBox="0 0 64 64"><rect x="23" y="8" width="18" height="30" rx="9" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M15 30c0 11 7 17 17 17s17-6 17-17M32 47v9M24 56h16" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>',
 qr:'<svg viewBox="0 0 64 64"><rect x="9" y="9" width="19" height="19" rx="3" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><rect x="36" y="9" width="19" height="19" rx="3" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><rect x="9" y="36" width="19" height="19" rx="3" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M15 15h7v7h-7zM42 15h7v7h-7zM15 42h7v7h-7zM37 37h7v7h-7zM48 48h7v7h-7zM48 37h7M37 49h5" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>',
 dice:'<svg viewBox="0 0 64 64"><rect x="9" y="9" width="46" height="46" rx="10" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><g fill="currentColor"><circle cx="22" cy="22" r="3.6"/><circle cx="42" cy="22" r="3.6"/><circle cx="32" cy="32" r="3.6"/><circle cx="22" cy="42" r="3.6"/><circle cx="42" cy="42" r="3.6"/></g></svg>'};
+IC.db='<svg viewBox="0 0 64 64"><path d="M12 16v32c0 4 9 8 20 8s20-4 20-8V16" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><ellipse cx="32" cy="16" rx="20" ry="8" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M12 32c0 4 9 8 20 8s20-4 20-8" stroke="currentColor" stroke-width="2.5" fill="none" opacity=".4"/></svg>';
 TOOLS.forEach(t=>t.i=IC[t.id]);
 function openTools(){$('home').classList.add('hidden');$('grade').classList.add('hidden');$('tools').classList.remove('hidden');
  $('tgrid').innerHTML=TOOLS.map(t=>`<div class="card" tabindex="0" onclick="openTool('${t.id}')" onkeydown="if(event.key==='Enter')openTool('${t.id}')"><div class="tile">${t.i}</div><div><h3>${t.n}</h3><p>${t.d}</p></div><span class="go">›</span></div>`).join('')}
-function openTool(id){const t=TOOLS.find(x=>x.id===id);$('tln').textContent=t.n;const b=$('tb2');b.innerHTML='';$('tl').classList.remove('hidden');tlOff=t.run(b)||null;
+function openTool(id){if(tlOff){tlOff();tlOff=null}const t=TOOLS.find(x=>x.id===id);$('tln').textContent=t.n;const b=$('tb2');b.innerHTML='';$('tl').classList.remove('hidden');tlOff=t.run(b)||null;
  try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>wl=w).catch(()=>{})}catch(e){}}
 function closeTool(){if(tlOff)tlOff();tlOff=null;try{wl&&wl.release()}catch(e){}wl=null;if(document.fullscreenElement===$('tl'))document.exitFullscreen();$('tl').classList.add('hidden');$('tb2').innerHTML=''}
 function fsTool(){const s=$('tl');if(!document.fullscreenElement)s.requestFullscreen&&s.requestFullscreen().catch(()=>{});else document.exitFullscreen()}
