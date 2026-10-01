@@ -218,6 +218,7 @@ main{min-height:0;height:calc(100dvh - 58px);padding:10px 14px!important;overflo
    <label for="p">Password</label><input id="p" type="password" autocomplete="current-password" placeholder="Enter your password">
    <p class="note" style="margin:8px 0 0">Gunakan email & password akun Supabase Anda.</p>
    <div class="err" id="le"></div>
+    <button type="button" class="btn ghost" style="margin-top:10px" onclick="showSetup()">⚙ Hubungkan Supabase</button>
    <button class="btn">Sign in</button>
   </form>
  </div>
@@ -270,10 +271,30 @@ main{min-height:0;height:calc(100dvh - 58px);padding:10px 14px!important;overflo
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ---------- Supabase configuration ---------- */
-const SUPABASE_URL = "PASTE_YOUR_SUPABASE_PROJECT_URL";
-const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY";
-const SUPABASE_READY = SUPABASE_URL.startsWith("https://") && !SUPABASE_PUBLISHABLE_KEY.startsWith("PASTE_");
-const sb = SUPABASE_READY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
+let SUPABASE_URL = localStorage.getItem('spena-supabase-url') || '';
+let SUPABASE_PUBLISHABLE_KEY = localStorage.getItem('spena-supabase-key') || '';
+let SUPABASE_READY = SUPABASE_URL.startsWith('https://') && !!SUPABASE_PUBLISHABLE_KEY;
+let sb = SUPABASE_READY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
+
+function showSetup(){
+  modal(`<h3>Hubungkan ke Supabase</h3>
+  <p class="note">Masukkan <b>Project URL</b> dan <b>Publishable key</b> dari Supabase → Project Settings → API. Gunakan Publishable/anon key, <b>bukan service_role</b>.</p>
+  <label>Supabase Project URL</label>
+  <input id="surl" type="url" placeholder="https://xxxxxxxx.supabase.co" value="${esc(SUPABASE_URL)}">
+  <label>Publishable / anon key</label>
+  <input id="skey" type="text" placeholder="eyJ..." value="${esc(SUPABASE_PUBLISHABLE_KEY)}" autocomplete="off">
+  <div class="row"><button class="btn ghost" onclick="closeM()">Batal</button><button class="btn" onclick="saveSupabaseConfig()">Simpan & Hubungkan</button></div>`);
+}
+function saveSupabaseConfig(){
+  const url=$('surl').value.trim().replace(/\/$/,'');
+  const key=$('skey').value.trim();
+  if(!/^https:\/\/[^\s]+\.supabase\.co(m)?$/.test(url)){alert('Project URL Supabase tidak valid. Contoh: https://xxxx.supabase.co');return}
+  if(!key){alert('Publishable/anon key belum diisi.');return}
+  if(key.toLowerCase().includes('service_role')){alert('Jangan gunakan service_role key. Gunakan Publishable/anon key.');return}
+  localStorage.setItem('spena-supabase-url',url);
+  localStorage.setItem('spena-supabase-key',key);
+  location.reload();
+}
 
 /* ---------- local fallback cache (only for first-run/demo; online data uses Supabase) ---------- */
 const DB={db:null,mem:{},
@@ -289,7 +310,7 @@ let cfg={user:'mr.spena',pass:'spena2026',logo:'',mascot:''},mats=[],cur=7;
 async function init(){
  applyPics();
  if(!SUPABASE_READY){
-   $('le').textContent='Supabase belum dikonfigurasi. Upload dulu file ini, lalu isi SUPABASE_URL dan SUPABASE_PUBLISHABLE_KEY.';
+   $('le').textContent='Aplikasi belum terhubung ke Supabase. Klik tombol "Hubungkan Supabase" di bawah.';
    return;
  }
  try{
@@ -346,7 +367,7 @@ function cutout(c){const x=c.getContext('2d'),d=x.getImageData(0,0,c.width,c.hei
  x.putImageData(d,0,0)}
 function toggleFS(){const d=document,r=d.documentElement;try{if(!d.fullscreenElement&&!d.webkitFullscreenElement){(r.requestFullscreen||r.webkitRequestFullscreen||(()=>alert('On iPhone/iPad: tap Share > Add to Home Screen for fullscreen.'))).call(r)}else{(d.exitFullscreen||d.webkitExitFullscreen).call(d)}}catch(e){}}
 $('lf').onsubmit=async e=>{e.preventDefault();
- if(!SUPABASE_READY){$('le').textContent='Supabase belum dikonfigurasi.';return}
+ if(!SUPABASE_READY){$('le').textContent='Hubungkan Supabase terlebih dahulu.';showSetup();return}
  $('le').textContent='Signing in...';
  const {error}=await sb.auth.signInWithPassword({email:$('u').value.trim(),password:$('p').value});
  if(error){$('le').textContent=error.message}else{$('le').textContent='';enter();await loadMaterials()}
@@ -403,7 +424,7 @@ function openSettings(){
  <label>School logo</label><input type="file" id="sl" accept="image/*">
  <label>Mascot photo</label><input type="file" id="sm" accept="image/*">
  <p class="note">Materi dan pengaturan disimpan online di Supabase. File HTML game disimpan di database; file gambar/video besar sebaiknya nanti kita pindahkan ke Supabase Storage.</p>
- <div class="row"><button class="btn ghost" onclick="closeM()">Cancel</button><button class="btn" onclick="saveSet()">Save online</button></div>`);
+ <div class="row"><button class="btn ghost" onclick="showSetup()">⚙ Koneksi Supabase</button><button class="btn ghost" onclick="closeM()">Cancel</button><button class="btn" onclick="saveSet()">Save online</button></div>`);
 }
 function readImg(f,cut){return new Promise(ok=>{if(!f)return ok(null);const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{const s=Math.min(1,400/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);if(cut)cutout(c);ok(c.toDataURL('image/png'))};i.src=r.result};r.readAsDataURL(f)})}
 async function saveSet(){
