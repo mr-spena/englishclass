@@ -307,6 +307,22 @@ main{min-height:0;height:calc(100dvh - 58px);padding:10px 14px!important;overflo
 .grip{display:grid;place-items:center;width:22px;height:34px;color:#9bb3d4;cursor:grab;touch-action:none;flex:none;border-radius:6px;user-select:none;-webkit-user-select:none;outline:none}
 .grip:hover,.grip:focus-visible{background:#eef4fd;color:var(--blue)}
 .mat.drag{position:relative;z-index:5;transition:none;box-shadow:0 10px 28px rgba(26,103,201,.25);border-color:var(--blue);cursor:grabbing}
+
+/* ===== materials list: one row per material, scrollable, clean on phone ===== */
+#list{grid-template-columns:1fr!important;flex:1;min-height:0;overflow-y:auto!important;overflow-x:hidden;align-content:start;gap:8px!important;padding:2px 2px 14px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#home{overflow-y:auto!important;overscroll-behavior:contain}
+.mat{display:grid!important;grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"g i t" "a a a";gap:8px 10px!important;align-items:center;padding:10px 12px!important;border-radius:14px!important}
+.mat .grip{grid-area:g}.mat .ic{grid-area:i;width:36px!important;height:36px!important;font-size:13px!important}
+.mat .t{grid-area:t;min-width:0!important}
+.mat b{font-size:14px!important;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mat p{font-size:11.5px!important}
+.mat .acts{grid-area:a;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.mat .acts button{width:100%;padding:9px 6px!important;font-size:13px!important}
+@media(min-width:680px){
+ .mat{grid-template-columns:auto auto minmax(0,1fr) auto;grid-template-areas:"g i t a";padding:10px 16px!important}
+ .mat b{font-size:15px!important}.mat p{font-size:12.5px!important}
+ .mat .acts{display:flex;gap:8px}.mat .acts button{width:auto;padding:8px 16px!important;font-size:13px!important}
+}
 </style>
 </head>
 <body>
@@ -470,10 +486,9 @@ function applyPics(){document.querySelectorAll('.scene').forEach(e=>e.innerHTML=
 function cnt(){document.querySelectorAll('[data-g]').forEach(e=>{const n=mats.filter(m=>m.grade==e.dataset.g).length;e.textContent=n+(n===1?' material':' materials')})}
 function render(){
  const L=mats.filter(m=>m.grade===cur);
- $('list').innerHTML=L.length?L.map(m=>`<div class="mat" data-id="${m.id}"><span class="grip" tabindex="0" role="button" aria-label="Drag to reorder" title="Drag to reorder"><svg viewBox="0 0 16 16" width="14" height="14"><g fill="currentColor"><circle cx="5" cy="3" r="1.6"/><circle cx="11" cy="3" r="1.6"/><circle cx="5" cy="8" r="1.6"/><circle cx="11" cy="8" r="1.6"/><circle cx="5" cy="13" r="1.6"/><circle cx="11" cy="13" r="1.6"/></g></svg></span><div class="ic">${cur}</div><div class="t"><b>${esc(m.title)}</b><p>${esc(m.desc)}</p>${chipsOf(m)}</div>
- <button class="btn" onclick="present('${m.id}')">Present</button>
+ $('list').innerHTML=L.length?L.map(m=>`<div class="mat" data-id="${m.id}"><span class="grip" tabindex="0" role="button" aria-label="Drag to reorder" title="Drag to reorder"><svg viewBox="0 0 16 16" width="14" height="14"><g fill="currentColor"><circle cx="5" cy="3" r="1.6"/><circle cx="11" cy="3" r="1.6"/><circle cx="5" cy="8" r="1.6"/><circle cx="11" cy="8" r="1.6"/><circle cx="5" cy="13" r="1.6"/><circle cx="11" cy="13" r="1.6"/></g></svg></span><div class="ic">${cur}</div><div class="t"><b>${esc(m.title)}</b><p>${esc(m.desc)}</p>${chipsOf(m)}</div><div class="acts"><button class="btn" onclick="present('${m.id}')">Present</button>
  <button class="btn ghost" onclick="openForm('${m.id}')">Edit</button>
- <button class="btn danger" onclick="del('${m.id}')">Delete</button></div>`).join('')
+ <button class="btn danger" onclick="del('${m.id}')">Delete</button></div></div>`).join('')
  :`<div class="empty"><h3>No materials yet</h3><p>Select “Add material” to upload your first slide or game.</p></div>`;
 }
 
